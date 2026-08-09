@@ -267,15 +267,39 @@ async function copyToClipboard(inputId = 'result-url-input') {
     if (inputId === 'result-url-input') {
          text = document.getElementById(inputId).value;
     } else {
-        // copy raw text
         text = inputId;
     }
     
+    if (navigator.clipboard && window.isSecureContext) {
+        try {
+            await navigator.clipboard.writeText(text);
+            showToast('Đã copy link!', 'success');
+            return;
+        } catch (err) {
+            console.error('Clipboard API failed', err);
+        }
+    }
+    
+    // Fallback for HTTP (IP address) or older iOS
     try {
-        await navigator.clipboard.writeText(text);
-        showToast('Đã copy link!', 'success');
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.top = "0";
+        textArea.style.left = "0";
+        textArea.style.opacity = "0";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        if (successful) {
+            showToast('Đã copy link!', 'success');
+        } else {
+            showToast('Lỗi khi copy!', 'error');
+        }
     } catch (err) {
-        showToast('Lỗi khi copy!', 'error');
+        showToast('Thiết bị không hỗ trợ copy!', 'error');
     }
 }
 
