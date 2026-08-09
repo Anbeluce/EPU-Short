@@ -12,7 +12,13 @@ window.switchTab = function(tabName) {
     if (content) content.classList.add('active');
 };
 
-window.openLinkModal = function(id = null, url = '', code = '') {
+window.openLinkModal = function(btnOrId = null, url = '', code = '') {
+    let id = btnOrId;
+    if (typeof btnOrId === 'object' && btnOrId !== null) {
+        id = btnOrId.dataset.id;
+        url = btnOrId.dataset.url;
+        code = btnOrId.dataset.code;
+    }
     const modal = document.getElementById('linkModal');
     const form = document.getElementById('linkForm');
     const title = document.getElementById('linkModalTitle');
@@ -33,7 +39,13 @@ window.openLinkModal = function(id = null, url = '', code = '') {
     modal.style.display = 'block';
 };
 
-window.openNoteModal = function(id = null, titleStr = '', code = '') {
+window.openNoteModal = function(btnOrId = null, titleStr = '', code = '') {
+    let id = btnOrId;
+    if (typeof btnOrId === 'object' && btnOrId !== null) {
+        id = btnOrId.dataset.id;
+        titleStr = btnOrId.dataset.title;
+        code = btnOrId.dataset.code;
+    }
     const modal = document.getElementById('noteModal');
     const form = document.getElementById('noteForm');
     const titleEl = document.getElementById('noteModalTitle');

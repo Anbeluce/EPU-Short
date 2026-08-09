@@ -84,7 +84,7 @@
                             <td>{{ link.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
                             <td>{% if link.expires_at %}{{ link.expires_at.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %}</td>
                             <td class="actions">
-                                <button type="button" class="btn-sm btn-secondary" onclick='openLinkModal({{ link.id }}, {{ link.original_url | tojson }}, {{ link.short_code | tojson }})'>✏️ Sửa</button>
+                                <button type="button" class="btn-sm btn-secondary" data-id="{{ link.id }}" data-url="{{ link.original_url }}" data-code="{{ link.short_code }}" onclick="openLinkModal(this)">✏️ Sửa</button>
                                 <form method="POST" action="/memaybeo/toggle/link/{{ link.id }}" style="display:inline">
                                     <button type="submit" class="btn-sm {% if link.is_active %}btn-warning{% else %}btn-success{% endif %}">
                                         {% if link.is_active %}Tắt{% else %}Bật{% endif %}
@@ -139,7 +139,7 @@
                             <td>{% if note.expires_at %}{{ note.expires_at.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %}</td>
                             <td class="actions">
                                 <textarea id="note-content-{{ note.id }}" style="display:none;">{{ note.content }}</textarea>
-                                <button type="button" class="btn-sm btn-secondary" onclick='openNoteModal({{ note.id }}, {{ (note.title or "") | tojson }}, {{ note.short_code | tojson }})'>✏️ Sửa</button>
+                                <button type="button" class="btn-sm btn-secondary" data-id="{{ note.id }}" data-title="{{ note.title or '' }}" data-code="{{ note.short_code }}" onclick="openNoteModal(this)">✏️ Sửa</button>
                                 <form method="POST" action="/memaybeo/toggle/note/{{ note.id }}" style="display:inline">
                                     <button type="submit" class="btn-sm {% if note.is_active %}btn-warning{% else %}btn-success{% endif %}">
                                         {% if note.is_active %}Tắt{% else %}Bật{% endif %}
