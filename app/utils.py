@@ -16,8 +16,13 @@ def verify_password(plain: str, hashed: str) -> bool:
     return bcrypt.checkpw(plain.encode('utf-8'), hashed.encode('utf-8'))
 
 
-def validate_custom_code(code: str) -> bool:
+def validate_custom_code(code: str, is_admin: bool = False) -> bool:
     import re
-    if not 3 <= len(code) <= 20:
+    reserved_words = {'api', 'note', 'memaybeo', 'static', 's', 'n', 'docs', 'redoc', 'openapi.json'}
+    if code.lower() in reserved_words:
+        return False
+        
+    min_length = 1 if is_admin else 3
+    if not min_length <= len(code) <= 20:
         return False
     return bool(re.match(r'^[a-zA-Z0-9_-]+$', code))

@@ -9,7 +9,7 @@ from app.services import get_link_by_code, increment_link_clicks
 from app.utils import verify_password
 from app.config import settings
 
-router = APIRouter(prefix="/s", tags=["ShortLink"])
+router = APIRouter(prefix="", tags=["ShortLink"])
 templates = Jinja2Templates(directory=str(Path(__file__).resolve().parent.parent / "templates"))
 templates.env.globals["APP_NAME"] = settings.APP_NAME
 templates.env.globals["APP_FOOTER"] = settings.APP_FOOTER

@@ -33,13 +33,17 @@
     </div>
 
     <div class="glass-card">
-        <div class="tabs" style="display: flex; justify-content: space-between; align-items: center;">
+        <div class="tabs" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
             <div style="display: flex; gap: 1rem;">
                 <button class="tab-btn active" data-target="tab-links" onclick="switchTab('links')"><i class="ph ph-link"></i> Links ({{ links|length }})</button>
                 <button class="tab-btn" data-target="tab-notes" onclick="switchTab('notes')"><i class="ph ph-note-pencil"></i> Notes ({{ notes|length }})</button>
             </div>
-            <div class="search-box">
-                <input type="text" id="table-search" placeholder="Tìm kiếm...">
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <div class="search-box mb-0" style="margin: 0;">
+                    <input type="text" id="table-search" placeholder="Tìm kiếm...">
+                </div>
+                <button class="btn btn-sm" onclick="openLinkModal()"><i class="ph ph-plus"></i> Tạo Link</button>
+                <button class="btn btn-sm" onclick="openNoteModal()"><i class="ph ph-plus"></i> Tạo Note</button>
             </div>
         </div>
 
@@ -62,7 +66,7 @@
                     <tbody>
                         {% for link in links %}
                         <tr>
-                            <td><a href="/s/{{ link.short_code }}" target="_blank">{{ link.short_code }}</a></td>
+                            <td><a href="/{{ link.short_code }}" target="_blank">{{ link.short_code }}</a></td>
                             <td class="url-cell" title="{{ link.original_url }}">
                                 {{ link.original_url[:50] }}{% if link.original_url|length > 50 %}...{% endif %}
                             </td>
@@ -80,6 +84,7 @@
                             <td>{{ link.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
                             <td>{% if link.expires_at %}{{ link.expires_at.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %}</td>
                             <td class="actions">
+                                <button type="button" class="btn-sm btn-secondary" onclick='openLinkModal({{ link.id }}, {{ link.original_url | tojson }}, {{ link.short_code | tojson }})'>✏️ Sửa</button>
                                 <form method="POST" action="/memaybeo/toggle/link/{{ link.id }}" style="display:inline">
                                     <button type="submit" class="btn-sm {% if link.is_active %}btn-warning{% else %}btn-success{% endif %}">
                                         {% if link.is_active %}Tắt{% else %}Bật{% endif %}
@@ -133,6 +138,8 @@
                             <td>{{ note.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
                             <td>{% if note.expires_at %}{{ note.expires_at.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %}</td>
                             <td class="actions">
+                                <textarea id="note-content-{{ note.id }}" style="display:none;">{{ note.content }}</textarea>
+                                <button type="button" class="btn-sm btn-secondary" onclick='openNoteModal({{ note.id }}, {{ (note.title or "") | tojson }}, {{ note.short_code | tojson }})'>✏️ Sửa</button>
                                 <form method="POST" action="/memaybeo/toggle/note/{{ note.id }}" style="display:inline">
                                     <button type="submit" class="btn-sm {% if note.is_active %}btn-warning{% else %}btn-success{% endif %}">
                                         {% if note.is_active %}Tắt{% else %}Bật{% endif %}
@@ -150,4 +157,88 @@
         </div>
     </div>
 </div>
+
+<!-- Admin Modals -->
+<div id="linkModal" class="modal">
+    <div class="modal-content glass-card">
+        <span class="close-modal" onclick="closeModal('linkModal')">&times;</span>
+        <h3 id="linkModalTitle" class="gradient-text mb-4">Tạo Link</h3>
+        <form id="linkForm" method="POST" action="/memaybeo/create/link">
+            <div class="input-group">
+                <label>URL gốc</label>
+                <input type="url" name="url" id="link_url" required>
+            </div>
+            <div class="input-group">
+                <label>Mã tùy chỉnh (tuỳ chọn)</label>
+                <input type="text" name="custom_code" id="link_code">
+            </div>
+            <div class="input-group">
+                <label>Mật khẩu (tuỳ chọn)</label>
+                <input type="password" name="password" id="link_pass" placeholder="Bỏ trống nếu không đổi">
+            </div>
+            <div class="input-group">
+                <label>Hết hạn sau (tuỳ chọn)</label>
+                <select name="expires_in_hours" id="link_expire">
+                    <option value="">Không đổi (nếu sửa)</option>
+                    <option value="0">Không hết hạn</option>
+                    <option value="1">1 giờ</option>
+                    <option value="24">1 ngày</option>
+                    <option value="168">7 ngày</option>
+                </select>
+            </div>
+            <button type="submit" class="btn w-100">Lưu</button>
+        </form>
+    </div>
+</div>
+
+<div id="noteModal" class="modal">
+    <div class="modal-content glass-card" style="max-width: 800px; width: 90%;">
+        <span class="close-modal" onclick="closeModal('noteModal')">&times;</span>
+        <h3 id="noteModalTitle" class="gradient-text mb-4">Tạo Note</h3>
+        <form id="noteForm" method="POST" action="/memaybeo/create/note">
+            <div class="input-row">
+                <div class="input-group">
+                    <label>Tiêu đề</label>
+                    <input type="text" name="title" id="note_title">
+                </div>
+                <div class="input-group">
+                    <label>Mã tùy chỉnh</label>
+                    <input type="text" name="custom_code" id="note_code">
+                </div>
+            </div>
+            <div class="input-group" style="color: var(--text-primary);">
+                <label>Nội dung</label>
+                <input type="hidden" name="content" id="note_content_hidden">
+                <div id="note_editor" style="height: 200px; background: white; color: black;"></div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label>Mật khẩu</label>
+                    <input type="password" name="password" id="note_pass" placeholder="Bỏ trống nếu không đổi">
+                </div>
+                <div class="input-group">
+                    <label>Hết hạn sau</label>
+                    <select name="expires_in_hours" id="note_expire">
+                        <option value="">Không đổi (nếu sửa)</option>
+                        <option value="0">Không hết hạn</option>
+                        <option value="1">1 giờ</option>
+                        <option value="24">1 ngày</option>
+                        <option value="168">7 ngày</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn w-100" onclick="document.getElementById('note_content_hidden').value = adminQuill.root.innerHTML">Lưu</button>
+        </form>
+    </div>
+</div>
+
+<style>
+.modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(5px); }
+.modal-content { margin: 5% auto; padding: 2rem; width: 400px; max-width: 90%; position: relative; }
+.close-modal { position: absolute; right: 1rem; top: 1rem; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); }
+.close-modal:hover { color: var(--text-primary); }
+</style>
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+
 {% endblock %}

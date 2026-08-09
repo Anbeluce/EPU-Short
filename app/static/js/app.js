@@ -1,4 +1,5 @@
 let quill; // Global quill instance
+let adminQuill; // Admin quill instance
 
 window.switchTab = function(tabName) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -10,6 +11,67 @@ window.switchTab = function(tabName) {
     const content = document.getElementById('tab-' + tabName);
     if (content) content.classList.add('active');
 };
+
+window.openLinkModal = function(id = null, url = '', code = '') {
+    const modal = document.getElementById('linkModal');
+    const form = document.getElementById('linkForm');
+    const title = document.getElementById('linkModalTitle');
+    
+    document.getElementById('link_url').value = url;
+    document.getElementById('link_code').value = code;
+    document.getElementById('link_pass').value = '';
+    document.getElementById('link_expire').value = '';
+    
+    if (id) {
+        title.innerText = 'Sửa Link';
+        form.action = `/memaybeo/edit/link/${id}`;
+    } else {
+        title.innerText = 'Tạo Link';
+        form.action = '/memaybeo/create/link';
+    }
+    
+    modal.style.display = 'block';
+};
+
+window.openNoteModal = function(id = null, titleStr = '', code = '') {
+    const modal = document.getElementById('noteModal');
+    const form = document.getElementById('noteForm');
+    const titleEl = document.getElementById('noteModalTitle');
+    
+    document.getElementById('note_title').value = titleStr;
+    document.getElementById('note_code').value = code;
+    document.getElementById('note_pass').value = '';
+    document.getElementById('note_expire').value = '';
+    
+    if (adminQuill) {
+        if (id) {
+            const contentEl = document.getElementById('note-content-' + id);
+            adminQuill.root.innerHTML = contentEl ? contentEl.value : '';
+        } else {
+            adminQuill.root.innerHTML = '';
+        }
+    }
+    
+    if (id) {
+        titleEl.innerText = 'Sửa Note';
+        form.action = `/memaybeo/edit/note/${id}`;
+    } else {
+        titleEl.innerText = 'Tạo Note';
+        form.action = '/memaybeo/create/note';
+    }
+    
+    modal.style.display = 'block';
+};
+
+window.closeModal = function(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+};
+
+window.addEventListener('click', function(event) {
+    if (event.target.classList.contains('modal')) {
+        event.target.style.display = 'none';
+    }
+});
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -32,6 +94,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (document.getElementById('editor')) {
         quill = new Quill('#editor', {
+            theme: 'snow',
+            placeholder: 'Nhập nội dung ghi chú...',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    ['blockquote', 'code-block'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    [{ 'align': [] }],
+                    ['link', 'image'],
+                    ['clean']
+                ]
+            }
+        });
+    }
+
+    if (document.getElementById('note_editor')) {
+        adminQuill = new Quill('#note_editor', {
             theme: 'snow',
             placeholder: 'Nhập nội dung ghi chú...',
             modules: {
@@ -123,15 +203,13 @@ async function submitForm(form, endpoint, btnId) {
 function showResult(data, type) {
     const resultCard = document.getElementById('result-card');
     const urlInput = document.getElementById('result-url-input');
-    const statsLink = document.getElementById('result-stats-link');
     const badgesContainer = document.querySelector('.result-badges');
     
     const baseUrl = window.location.origin;
     const code = data.short_code;
-    const url = type === 'link' ? (data.short_url || `${baseUrl}/s/${code}`) : (data.note_url || `${baseUrl}/n/${code}`);
+    const url = type === 'link' ? (data.short_url || `${baseUrl}/${code}`) : (data.note_url || `${baseUrl}/n/${code}`);
     
     urlInput.value = url;
-    statsLink.href = `/stats/${type}/${code}`;
     
     badgesContainer.innerHTML = '';
     if (data.has_password) {

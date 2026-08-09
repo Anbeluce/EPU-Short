@@ -7,7 +7,11 @@ from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from datetime import datetime, timezone
 
 from app.database import get_session
-from app.services import get_all_links, get_all_notes, toggle_link_active, toggle_note_active, delete_link, delete_note, get_overview_stats
+from app.services import (
+    get_all_links, get_all_notes, toggle_link_active, toggle_note_active, 
+    delete_link, delete_note, get_overview_stats,
+    create_short_link, create_note, edit_link, edit_note
+)
 from app.config import settings
 
 router = APIRouter(prefix="/memaybeo", tags=["Admin"])
@@ -92,8 +96,48 @@ def admin_delete(request: Request, item_type: str, item_id: int, session: Sessio
         
     return RedirectResponse(url="/memaybeo/dashboard", status_code=303)
 
+@router.post("/create/link")
+def admin_create_link(request: Request, url: str = Form(...), custom_code: str = Form(None), password: str = Form(None), expires_in_hours: int = Form(None), session: Session = Depends(get_session)):
+    user = require_admin(request)
+    if not user: return RedirectResponse(url="/memaybeo", status_code=303)
+    try:
+        create_short_link(session, url, custom_code, password, expires_in_hours, is_admin=True)
+    except Exception as e:
+        print(f"Error creating link: {e}")
+    return RedirectResponse(url="/memaybeo/dashboard", status_code=303)
+
+@router.post("/create/note")
+def admin_create_note(request: Request, content: str = Form(...), title: str = Form(None), custom_code: str = Form(None), password: str = Form(None), expires_in_hours: int = Form(None), session: Session = Depends(get_session)):
+    user = require_admin(request)
+    if not user: return RedirectResponse(url="/memaybeo", status_code=303)
+    try:
+        create_note(session, content, title, custom_code, password, expires_in_hours, is_admin=True)
+    except Exception as e:
+        print(f"Error creating note: {e}")
+    return RedirectResponse(url="/memaybeo/dashboard", status_code=303)
+
+@router.post("/edit/link/{item_id}")
+def admin_edit_link(request: Request, item_id: int, original_url: str = Form(...), custom_code: str = Form(...), password: str = Form(None), expires_in_hours: int = Form(None), session: Session = Depends(get_session)):
+    user = require_admin(request)
+    if not user: return RedirectResponse(url="/memaybeo", status_code=303)
+    try:
+        edit_link(session, item_id, original_url, custom_code, password, expires_in_hours)
+    except Exception as e:
+        print(f"Error editing link: {e}")
+    return RedirectResponse(url="/memaybeo/dashboard", status_code=303)
+
+@router.post("/edit/note/{item_id}")
+def admin_edit_note(request: Request, item_id: int, content: str = Form(...), title: str = Form(None), custom_code: str = Form(...), password: str = Form(None), expires_in_hours: int = Form(None), session: Session = Depends(get_session)):
+    user = require_admin(request)
+    if not user: return RedirectResponse(url="/memaybeo", status_code=303)
+    try:
+        edit_note(session, item_id, content, title, custom_code, password, expires_in_hours)
+    except Exception as e:
+        print(f"Error editing note: {e}")
+    return RedirectResponse(url="/memaybeo/dashboard", status_code=303)
+
 @router.get("/logout")
 def admin_logout():
-    response = RedirectResponse(url="/memaybeo", status_code=303)
+    response = RedirectResponse(url="/", status_code=303)
     response.delete_cookie("admin_session")
     return response

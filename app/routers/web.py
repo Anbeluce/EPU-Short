@@ -20,17 +20,3 @@ def index(request: Request):
 @router.get("/note", response_class=HTMLResponse)
 def note_index(request: Request):
     return templates.TemplateResponse(request=request, name="note_index.html", context={"base_url": settings.BASE_URL})
-
-@router.get("/stats/link/{code}", response_class=HTMLResponse)
-def link_stats(request: Request, code: str, session: Session = Depends(get_session)):
-    link = get_link_by_code(session, code)
-    if not link:
-        return templates.TemplateResponse(request=request, name="error.html", context={"base_url": settings.BASE_URL, "error_title": "404 Không tìm thấy", "error_message": "Link không tồn tại hoặc đã hết hạn"}, status_code=404)
-    return templates.TemplateResponse(request=request, name="stats.html", context={"base_url": settings.BASE_URL, "type": "link", "item": link})
-
-@router.get("/stats/note/{code}", response_class=HTMLResponse)
-def note_stats(request: Request, code: str, session: Session = Depends(get_session)):
-    note = get_note_by_code(session, code)
-    if not note:
-        return templates.TemplateResponse(request=request, name="error.html", context={"base_url": settings.BASE_URL, "error_title": "404 Không tìm thấy", "error_message": "Note không tồn tại hoặc đã hết hạn"}, status_code=404)
-    return templates.TemplateResponse(request=request, name="stats.html", context={"base_url": settings.BASE_URL, "type": "note", "item": note})

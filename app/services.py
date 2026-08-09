@@ -11,13 +11,13 @@ from app.utils import generate_short_code, hash_password, validate_custom_code
 def utcnow():
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
-def create_short_link(session: Session, url: str, custom_code: Optional[str] = None, password: Optional[str] = None, expires_in_hours: Optional[int] = None) -> Link:
+def create_short_link(session: Session, url: str, custom_code: Optional[str] = None, password: Optional[str] = None, expires_in_hours: Optional[int] = None, is_admin: bool = False) -> Link:
     if not validators.url(url):
         raise ValueError("Invalid URL")
         
     code = custom_code
     if code:
-        if not validate_custom_code(code):
+        if not validate_custom_code(code, is_admin=is_admin):
             raise ValueError("Invalid custom code format")
         existing = session.exec(select(Link).where(Link.short_code == code)).first()
         if existing:
@@ -58,7 +58,7 @@ def increment_link_clicks(session: Session, link: Link):
     session.add(link)
     session.commit()
 
-def create_note(session: Session, content: str, title: Optional[str] = None, custom_code: Optional[str] = None, password: Optional[str] = None, expires_in_hours: Optional[int] = None) -> Note:
+def create_note(session: Session, content: str, title: Optional[str] = None, custom_code: Optional[str] = None, password: Optional[str] = None, expires_in_hours: Optional[int] = None, is_admin: bool = False) -> Note:
     # Sanitize HTML content
     allowed_tags = bleach.sanitizer.ALLOWED_TAGS.union({'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'br', 'strong', 'em', 'u', 's', 'ol', 'ul', 'li', 'a', 'img', 'blockquote', 'pre'})
     allowed_attributes = {
@@ -75,7 +75,7 @@ def create_note(session: Session, content: str, title: Optional[str] = None, cus
 
     code = custom_code
     if code:
-        if not validate_custom_code(code):
+        if not validate_custom_code(code, is_admin=is_admin):
             raise ValueError("Invalid custom code format")
         existing = session.exec(select(Note).where(Note.short_code == code)).first()
         if existing:
@@ -119,6 +119,82 @@ def increment_note_views(session: Session, note: Note):
 
 def get_all_links(session: Session) -> List[Link]:
     return session.exec(select(Link).order_by(Link.created_at.desc())).all()
+
+def edit_link(session: Session, link_id: int, original_url: str, short_code: str, password: Optional[str] = None, expires_in_hours: Optional[int] = None) -> Link:
+    link = session.get(Link, link_id)
+    if not link:
+        raise ValueError("Link not found")
+        
+    if not validators.url(original_url):
+        raise ValueError("Invalid URL")
+        
+    if short_code != link.short_code:
+        if not validate_custom_code(short_code, is_admin=True):
+            raise ValueError("Invalid custom code format")
+        existing = session.exec(select(Link).where(Link.short_code == short_code)).first()
+        if existing:
+            raise ValueError("Code đã được sử dụng!")
+        link.short_code = short_code
+
+    link.original_url = original_url
+    
+    if password:
+        link.password_hash = hash_password(password)
+        
+    if expires_in_hours is not None:
+        if expires_in_hours == 0:
+            link.expires_at = None
+        else:
+            link.expires_at = utcnow() + timedelta(hours=expires_in_hours)
+            
+    session.add(link)
+    session.commit()
+    session.refresh(link)
+    return link
+
+def edit_note(session: Session, note_id: int, content: str, title: Optional[str] = None, short_code: Optional[str] = None, password: Optional[str] = None, expires_in_hours: Optional[int] = None) -> Note:
+    note = session.get(Note, note_id)
+    if not note:
+        raise ValueError("Note not found")
+        
+    if short_code and short_code != note.short_code:
+        if not validate_custom_code(short_code, is_admin=True):
+            raise ValueError("Invalid custom code format")
+        existing = session.exec(select(Note).where(Note.short_code == short_code)).first()
+        if existing:
+            raise ValueError("Code đã được sử dụng!")
+        note.short_code = short_code
+
+    note.title = title
+    
+    # Sanitize HTML content
+    allowed_tags = bleach.sanitizer.ALLOWED_TAGS.union({'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'br', 'strong', 'em', 'u', 's', 'ol', 'ul', 'li', 'a', 'img', 'blockquote', 'pre'})
+    allowed_attributes = {
+        **bleach.sanitizer.ALLOWED_ATTRIBUTES,
+        'a': ['href', 'title', 'target'],
+        'img': ['src', 'alt', 'width', 'height'],
+        'span': ['style', 'class'],
+        '*': ['style', 'class']
+    }
+    allowed_styles = ['color', 'background-color', 'text-align', 'font-size', 'font-family']
+    css_sanitizer = CSSSanitizer(allowed_css_properties=allowed_styles)
+    clean_content = bleach.clean(content, tags=allowed_tags, attributes=allowed_attributes, css_sanitizer=css_sanitizer)
+    
+    note.content = clean_content
+    
+    if password:
+        note.password_hash = hash_password(password)
+        
+    if expires_in_hours is not None:
+        if expires_in_hours == 0:
+            note.expires_at = None
+        else:
+            note.expires_at = utcnow() + timedelta(hours=expires_in_hours)
+            
+    session.add(note)
+    session.commit()
+    session.refresh(note)
+    return note
 
 def get_all_notes(session: Session) -> List[Note]:
     return session.exec(select(Note).order_by(Note.created_at.desc())).all()

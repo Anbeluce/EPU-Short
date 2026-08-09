@@ -29,11 +29,11 @@ if not templates_dir.exists():
 templates = Jinja2Templates(directory=str(templates_dir))
 
 # Include routers in correct order
-app.include_router(shortlink.router)
 app.include_router(note.router)
 app.include_router(admin.router)
 app.include_router(api.router)
 app.include_router(web.router)
+app.include_router(shortlink.router)
 
 @app.exception_handler(404)
 async def custom_404_handler(request: Request, exc):
