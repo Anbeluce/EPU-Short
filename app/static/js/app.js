@@ -9,7 +9,7 @@ window.switchTab = function(tabName) {
     const btn = document.querySelector(`[onclick="switchTab('${tabName}')"]`);
     if (btn) btn.classList.add('active');
     
-    const content = document.getElementById(`tab-${tabName}s`);
+    const content = document.getElementById(`tab-${tabName}`);
     if (content) content.classList.add('active');
     
     localStorage.setItem('adminActiveTab', tabName);
