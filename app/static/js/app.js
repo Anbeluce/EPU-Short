@@ -166,6 +166,51 @@ function setupTableSorting() {
     });
 }
 
+const ROWS_PER_PAGE = 20;
+
+function setupPagination(tableId, paginationId) {
+    const table = document.getElementById(tableId);
+    const paginationEl = document.getElementById(paginationId);
+    if (!table || !paginationEl) return;
+
+    const tbody = table.querySelector('tbody');
+    const allRows = Array.from(tbody.querySelectorAll('tr'));
+    const totalPages = Math.ceil(allRows.length / ROWS_PER_PAGE);
+
+    if (totalPages <= 1) {
+        paginationEl.innerHTML = '';
+        return;
+    }
+
+    let currentPage = 1;
+
+    function showPage(page) {
+        currentPage = page;
+        allRows.forEach((row, i) => {
+            const start = (page - 1) * ROWS_PER_PAGE;
+            const end = start + ROWS_PER_PAGE;
+            row.style.display = (i >= start && i < end) ? '' : 'none';
+        });
+        renderButtons();
+    }
+
+    function renderButtons() {
+        let html = '';
+        html += `<button ${currentPage === 1 ? 'disabled' : ''} onclick="this.dispatchEvent(new CustomEvent('paginate',{bubbles:true,detail:${currentPage - 1}}))">&laquo;</button>`;
+        for (let i = 1; i <= totalPages; i++) {
+            html += `<button class="${i === currentPage ? 'active' : ''}" onclick="this.dispatchEvent(new CustomEvent('paginate',{bubbles:true,detail:${i}}))">${i}</button>`;
+        }
+        html += `<button ${currentPage === totalPages ? 'disabled' : ''} onclick="this.dispatchEvent(new CustomEvent('paginate',{bubbles:true,detail:${currentPage + 1}}))">&raquo;</button>`;
+        paginationEl.innerHTML = html;
+    }
+
+    paginationEl.addEventListener('paginate', (e) => {
+        showPage(e.detail);
+    });
+
+    showPage(1);
+}
+
 window.closeModal = function(modalId) {
     document.getElementById(modalId).style.display = 'none';
 };
@@ -184,6 +229,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     setupTableSorting();
+    setupPagination('linksTable', 'links-pagination');
+    setupPagination('notesTable', 'notes-pagination');
 
     // Form Submissions
     const shortenForm = document.getElementById('shorten-form');

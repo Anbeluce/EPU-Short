@@ -50,7 +50,7 @@
         <!-- Links Table -->
         <div id="tab-links" class="tab-content active">
             <div class="bulk-actions" id="bulk-links" style="display: none; margin-bottom: 1rem;">
-                <button class="btn btn-danger" onclick="bulkDelete('link')">Xóa <span id="bulk-links-count">0</span> mục đã chọn</button>
+                <button class="btn btn-danger" onclick="bulkDelete('link')" style="gap: 0.3em;">Xóa&nbsp;<span id="bulk-links-count">0</span>&nbsp;mục đã chọn</button>
             </div>
             <div class="table-responsive">
                 <table class="admin-table sortable-table" id="linksTable">
@@ -102,12 +102,13 @@
                     </tbody>
                 </table>
             </div>
+            <div class="pagination" id="links-pagination"></div>
         </div>
 
         <!-- Notes Table -->
         <div id="tab-notes" class="tab-content">
             <div class="bulk-actions" id="bulk-notes" style="display: none; margin-bottom: 1rem;">
-                <button class="btn btn-danger" onclick="bulkDelete('note')">Xóa <span id="bulk-notes-count">0</span> mục đã chọn</button>
+                <button class="btn btn-danger" onclick="bulkDelete('note')" style="gap: 0.3em;">Xóa&nbsp;<span id="bulk-notes-count">0</span>&nbsp;mục đã chọn</button>
             </div>
             <div class="table-responsive">
                 <table class="admin-table sortable-table" id="notesTable">
@@ -162,6 +163,7 @@
                     </tbody>
                 </table>
             </div>
+            <div class="pagination" id="notes-pagination"></div>
         </div>
     </div>
 </div>
