@@ -10,8 +10,8 @@ from typing import Optional
 from app.database import get_session
 from app.services import (
     get_all_links, get_all_notes, toggle_link_active, toggle_note_active, 
-    delete_link, delete_note, get_overview_stats,
-    create_short_link, create_note, edit_link, edit_note
+    delete_link, delete_note, delete_bulk_links, delete_bulk_notes, 
+    get_overview_stats, create_short_link, edit_link, create_note, edit_note, get_note_by_code
 )
 from app.config import settings
 
@@ -107,6 +107,39 @@ def admin_delete(request: Request, item_type: str, item_id: int, session: Sessio
         delete_note(session, item_id)
         
     return RedirectResponse(url="/memaybeo/dashboard", status_code=303)
+
+@router.post("/delete/note/{item_id}")
+def admin_delete_note(request: Request, item_id: int, session: Session = Depends(get_session)):
+    user = require_admin(request)
+    if not user: return RedirectResponse(url="/memaybeo", status_code=303)
+    delete_note(session, item_id)
+    return RedirectResponse(url="/memaybeo/dashboard", status_code=303)
+
+@router.post("/bulk-delete/link")
+async def admin_bulk_delete_link(request: Request, session: Session = Depends(get_session)):
+    user = require_admin(request)
+    if not user: return {"success": False, "detail": "Unauthorized"}
+    try:
+        data = await request.json()
+        ids = data.get("ids", [])
+        if ids:
+            delete_bulk_links(session, ids)
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "detail": str(e)}
+
+@router.post("/bulk-delete/note")
+async def admin_bulk_delete_note(request: Request, session: Session = Depends(get_session)):
+    user = require_admin(request)
+    if not user: return {"success": False, "detail": "Unauthorized"}
+    try:
+        data = await request.json()
+        ids = data.get("ids", [])
+        if ids:
+            delete_bulk_notes(session, ids)
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "detail": str(e)}
 
 @router.post("/create/link")
 def admin_create_link(request: Request, url: str = Form(...), custom_code: str = Form(None), expires_at: str = Form(None), session: Session = Depends(get_session)):

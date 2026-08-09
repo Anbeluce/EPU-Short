@@ -204,11 +204,25 @@ def delete_link(session: Session, link_id: int):
         session.delete(link)
         session.commit()
 
+def delete_bulk_links(session: Session, link_ids: List[int]):
+    for link_id in link_ids:
+        link = session.get(Link, link_id)
+        if link:
+            session.delete(link)
+    session.commit()
+
 def delete_note(session: Session, note_id: int):
     note = session.get(Note, note_id)
     if note:
         session.delete(note)
         session.commit()
+
+def delete_bulk_notes(session: Session, note_ids: List[int]):
+    for note_id in note_ids:
+        note = session.get(Note, note_id)
+        if note:
+            session.delete(note)
+    session.commit()
 
 def get_overview_stats(session: Session) -> Dict[str, Any]:
     links = session.exec(select(Link)).all()

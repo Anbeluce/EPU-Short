@@ -5,7 +5,7 @@
 {% block body %}
 <div class="admin-layout container mt-4">
     <div class="admin-header">
-        <h2 class="gradient-text" style="margin:0;"><i class="ph ph-lightning"></i>Admin</h2>
+        <h2 class="gradient-text" style="margin:0;">Admin</h2>
         <a href="/memaybeo/logout" class="btn btn-secondary">Đăng xuất</a>
     </div>
 
@@ -35,36 +35,41 @@
     <div class="glass-card">
         <div class="tabs" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
             <div style="display: flex; gap: 1rem;">
-                <button class="tab-btn active" data-target="tab-links" onclick="switchTab('links')"><i class="ph ph-link"></i> Links ({{ links|length }})</button>
-                <button class="tab-btn" data-target="tab-notes" onclick="switchTab('notes')"><i class="ph ph-note-pencil"></i> Notes ({{ notes|length }})</button>
+                <button class="tab-btn active" data-target="tab-links" onclick="switchTab('links')">Links ({{ links|length }})</button>
+                <button class="tab-btn" data-target="tab-notes" onclick="switchTab('notes')">Notes ({{ notes|length }})</button>
             </div>
             <div style="display: flex; gap: 1rem; align-items: center;">
                 <div class="search-box mb-0" style="margin: 0;">
                     <input type="text" id="table-search" placeholder="Tìm kiếm...">
                 </div>
-                <button class="btn btn-sm" onclick="openLinkModal()"><i class="ph ph-plus"></i> Tạo Link</button>
-                <button class="btn btn-sm" onclick="openNoteModal()"><i class="ph ph-plus"></i> Tạo Note</button>
+                <button class="btn btn-sm" onclick="openLinkModal()">Tạo Link</button>
+                <button class="btn btn-sm" onclick="openNoteModal()">Tạo Note</button>
             </div>
         </div>
 
         <!-- Links Table -->
         <div id="tab-links" class="tab-content active">
+            <div class="bulk-actions" id="bulk-links" style="display: none; margin-bottom: 1rem;">
+                <button class="btn btn-danger" onclick="bulkDelete('link')">Xóa <span id="bulk-links-count">0</span> mục đã chọn</button>
+            </div>
             <div class="table-responsive">
-                <table class="admin-table" id="links-table">
+                <table class="admin-table sortable-table" id="linksTable">
                     <thead>
                         <tr>
-                            <th>Code</th>
-                            <th>URL gốc</th>
-                            <th>Clicks</th>
-                            <th>Trạng thái</th>
-                            <th>Ngày tạo</th>
-                            <th>Hết hạn</th>
+                            <th class="checkbox-col" style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllLinks" onchange="toggleSelectAll('link', this.checked)"></th>
+                            <th data-sort="string" style="cursor: pointer;">Code ↕</th>
+                            <th data-sort="string" style="cursor: pointer;">URL gốc ↕</th>
+                            <th data-sort="number" style="cursor: pointer;">Clicks ↕</th>
+                            <th data-sort="string" style="cursor: pointer;">Trạng thái ↕</th>
+                            <th data-sort="date" style="cursor: pointer;">Ngày tạo ↕</th>
+                            <th data-sort="date" style="cursor: pointer;">Hết hạn ↕</th>
                             <th>Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for link in links %}
                         <tr>
+                            <td style="text-align: center;"><input type="checkbox" class="link-checkbox" value="{{ link.id }}" onchange="updateBulkCount('link')"></td>
                             <td><a href="/{{ link.short_code }}" target="_blank">{{ link.short_code }}</a></td>
                             <td class="url-cell" title="{{ link.original_url }}">
                                 {{ link.original_url[:50] }}{% if link.original_url|length > 50 %}...{% endif %}
@@ -82,7 +87,7 @@
                             <td>{{ link.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
                             <td>{% if link.expires_at %}{{ link.expires_at.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %}</td>
                             <td class="actions">
-                                <button type="button" class="btn-sm btn-secondary" data-id="{{ link.id }}" data-url="{{ link.original_url }}" data-code="{{ link.short_code }}" data-expires="{{ link.expires_at.strftime('%Y-%m-%d %H:%M') if link.expires_at else '' }}" onclick="openLinkModal(this)">✏️ Sửa</button>
+                                <button type="button" class="btn-sm btn-secondary" data-id="{{ link.id }}" data-url="{{ link.original_url }}" data-code="{{ link.short_code }}" data-expires="{{ link.expires_at.strftime('%Y-%m-%d %H:%M') if link.expires_at else '' }}" onclick="openLinkModal(this)">Sửa</button>
                                 <form method="POST" action="/memaybeo/toggle/link/{{ link.id }}" style="display:inline">
                                     <button type="submit" class="btn-sm {% if link.is_active %}btn-warning{% else %}btn-success{% endif %}">
                                         {% if link.is_active %}Tắt{% else %}Bật{% endif %}
@@ -101,29 +106,34 @@
 
         <!-- Notes Table -->
         <div id="tab-notes" class="tab-content">
+            <div class="bulk-actions" id="bulk-notes" style="display: none; margin-bottom: 1rem;">
+                <button class="btn btn-danger" onclick="bulkDelete('note')">Xóa <span id="bulk-notes-count">0</span> mục đã chọn</button>
+            </div>
             <div class="table-responsive">
-                <table class="admin-table" id="notes-table">
+                <table class="admin-table sortable-table" id="notesTable">
                     <thead>
                         <tr>
-                            <th>Code</th>
-                            <th>Tiêu đề</th>
-                            <th>Views</th>
-                            <th>Password</th>
-                            <th>Trạng thái</th>
-                            <th>Ngày tạo</th>
-                            <th>Hết hạn</th>
+                            <th class="checkbox-col" style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllNotes" onchange="toggleSelectAll('note', this.checked)"></th>
+                            <th data-sort="string" style="cursor: pointer;">Code ↕</th>
+                            <th data-sort="string" style="cursor: pointer;">Tiêu đề ↕</th>
+                            <th data-sort="number" style="cursor: pointer;">Views ↕</th>
+                            <th data-sort="string" style="cursor: pointer;">Password ↕</th>
+                            <th data-sort="string" style="cursor: pointer;">Trạng thái ↕</th>
+                            <th data-sort="date" style="cursor: pointer;">Ngày tạo ↕</th>
+                            <th data-sort="date" style="cursor: pointer;">Hết hạn ↕</th>
                             <th>Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for note in notes %}
                         <tr>
+                            <td style="text-align: center;"><input type="checkbox" class="note-checkbox" value="{{ note.id }}" onchange="updateBulkCount('note')"></td>
                             <td><a href="/n/{{ note.short_code }}" target="_blank">{{ note.short_code }}</a></td>
                             <td class="url-cell" title="{{ note.title }}">
                                 {% if note.title %}{{ note.title[:30] }}{% if note.title|length > 30 %}...{% endif %}{% else %}—{% endif %}
                             </td>
                             <td>{{ note.view_count }}</td>
-                            <td>{% if note.password_hash %}<i class="ph ph-lock-key"></i>{% else %}—{% endif %}</td>
+                            <td>{% if note.password_hash %}Có{% else %}—{% endif %}</td>
                             <td>
                                 {% if not note.is_active %}
                                     <span class="badge badge-red">Inactive</span>
@@ -137,7 +147,7 @@
                             <td>{% if note.expires_at %}{{ note.expires_at.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %}</td>
                             <td class="actions">
                                 <textarea id="note-content-{{ note.id }}" style="display:none;">{{ note.content }}</textarea>
-                                <button type="button" class="btn-sm btn-secondary" data-id="{{ note.id }}" data-title="{{ note.title or '' }}" data-code="{{ note.short_code }}" data-expires="{{ note.expires_at.strftime('%Y-%m-%d %H:%M') if note.expires_at else '' }}" onclick="openNoteModal(this)">✏️ Sửa</button>
+                                <button type="button" class="btn-sm btn-secondary" data-id="{{ note.id }}" data-title="{{ note.title or '' }}" data-code="{{ note.short_code }}" data-expires="{{ note.expires_at.strftime('%Y-%m-%d %H:%M') if note.expires_at else '' }}" onclick="openNoteModal(this)">Sửa</button>
                                 <form method="POST" action="/memaybeo/toggle/note/{{ note.id }}" style="display:inline">
                                     <button type="submit" class="btn-sm {% if note.is_active %}btn-warning{% else %}btn-success{% endif %}">
                                         {% if note.is_active %}Tắt{% else %}Bật{% endif %}

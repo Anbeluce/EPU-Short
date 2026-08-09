@@ -4,13 +4,15 @@ let fpLinkExpire, fpNoteExpire, fpShortenExpire;
 
 window.switchTab = function(tabName) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(b => b.classList.remove('active'));
     
-    const btn = document.querySelector(`.tab-btn[onclick="switchTab('${tabName}')"]`) || document.querySelector(`.tab-btn[data-target="tab-${tabName}"]`);
+    const btn = document.querySelector(`[onclick="switchTab('${tabName}')"]`);
     if (btn) btn.classList.add('active');
     
-    const content = document.getElementById('tab-' + tabName);
+    const content = document.getElementById(`tab-${tabName}s`);
     if (content) content.classList.add('active');
+    
+    localStorage.setItem('adminActiveTab', tabName);
 };
 
 window.openLinkModal = function(btnOrId = null, url = '', code = '', expires = '') {
@@ -78,10 +80,91 @@ window.openNoteModal = function(btnOrId = null, titleStr = '', code = '', expire
     } else {
         titleEl.innerText = 'Tạo Note';
         form.action = '/memaybeo/create/note';
+        adminQuill.root.innerHTML = '';
     }
     
     modal.style.display = 'block';
 };
+
+window.toggleSelectAll = function(type, isChecked) {
+    document.querySelectorAll(`.${type}-checkbox`).forEach(cb => cb.checked = isChecked);
+    updateBulkCount(type);
+};
+
+window.updateBulkCount = function(type) {
+    const count = document.querySelectorAll(`.${type}-checkbox:checked`).length;
+    const btnContainer = document.getElementById(`bulk-${type}s`);
+    const countSpan = document.getElementById(`bulk-${type}s-count`);
+    if (btnContainer && countSpan) {
+        countSpan.innerText = count;
+        btnContainer.style.display = count > 0 ? 'block' : 'none';
+    }
+};
+
+window.bulkDelete = async function(type) {
+    const checkboxes = document.querySelectorAll(`.${type}-checkbox:checked`);
+    const ids = Array.from(checkboxes).map(cb => parseInt(cb.value));
+    if (ids.length === 0) return;
+    
+    if (!confirm(`Bạn có chắc muốn xóa ${ids.length} mục đã chọn? Hành động này không thể hoàn tác!`)) return;
+    
+    try {
+        const res = await fetch(`/memaybeo/bulk-delete/${type}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ids})
+        });
+        const result = await res.json();
+        if (result.success) {
+            window.location.reload();
+        } else {
+            showToast('Lỗi: ' + result.detail, 'error');
+        }
+    } catch(e) {
+        showToast('Lỗi kết nối', 'error');
+    }
+};
+
+function setupTableSorting() {
+    document.querySelectorAll('.sortable-table th[data-sort]').forEach(th => {
+        th.addEventListener('click', () => {
+            const table = th.closest('table');
+            const tbody = table.querySelector('tbody');
+            const type = th.dataset.sort;
+            const index = Array.from(th.parentNode.children).indexOf(th);
+            
+            const currentDir = th.dataset.dir || 'desc';
+            const newDir = currentDir === 'asc' ? 'desc' : 'asc';
+            th.dataset.dir = newDir;
+            
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            rows.sort((a, b) => {
+                const valA = a.children[index].innerText.trim();
+                const valB = b.children[index].innerText.trim();
+                
+                if (type === 'number') {
+                    return newDir === 'asc' ? (Number(valA) - Number(valB)) : (Number(valB) - Number(valA));
+                } else if (type === 'date') {
+                    const parseDate = (str) => {
+                        if(str === '—' || !str) return 0;
+                        const parts = str.split(/[ \/:]/);
+                        if(parts.length >= 5) {
+                            return new Date(parts[2], parts[1]-1, parts[0], parts[3], parts[4]).getTime();
+                        }
+                        return 0;
+                    };
+                    return newDir === 'asc' ? parseDate(valA) - parseDate(valB) : parseDate(valB) - parseDate(valA);
+                } else {
+                    return newDir === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                }
+            });
+            
+            tbody.innerHTML = '';
+            rows.forEach(r => tbody.appendChild(r));
+        });
+    });
+}
 
 window.closeModal = function(modalId) {
     document.getElementById(modalId).style.display = 'none';
@@ -94,6 +177,13 @@ window.addEventListener('click', function(event) {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
+    const activeTab = localStorage.getItem('adminActiveTab');
+    if (activeTab && window.location.pathname.includes('/memaybeo')) {
+        const btn = document.querySelector(`[onclick="switchTab('${activeTab}')"]`);
+        if (btn) switchTab(activeTab);
+    }
+
+    setupTableSorting();
 
     // Form Submissions
     const shortenForm = document.getElementById('shorten-form');
@@ -253,10 +343,10 @@ function showResult(data, type) {
     
     badgesContainer.innerHTML = '';
     if (data.has_password) {
-        badgesContainer.innerHTML += '<span class="badge badge-purple">🔒 Protected</span>';
+        badgesContainer.innerHTML += '<span class="badge badge-purple">Protected</span>';
     }
     if (data.expires_at) {
-        badgesContainer.innerHTML += '<span class="badge badge-yellow">⏰ Has Expiry</span>';
+        badgesContainer.innerHTML += '<span class="badge badge-yellow">Has Expiry</span>';
     }
 
     resultCard.style.display = 'block';
@@ -319,7 +409,7 @@ function showToast(message, type = 'success') {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     toast.innerHTML = `
-        <span>${type === 'success' ? '✅' : '❌'}</span>
+        <span>${type === 'success' ? 'OK' : 'Lỗi'}</span>
         <div>${message}</div>
     `;
 
@@ -335,20 +425,13 @@ function showToast(message, type = 'success') {
 window.togglePassword = function(inputId) {
     const input = document.getElementById(inputId);
     const btn = input.nextElementSibling;
-    const icon = btn.querySelector('i');
     
     if (input.type === 'password') {
         input.type = 'text';
-        if (icon) {
-            icon.classList.remove('ph-eye');
-            icon.classList.add('ph-eye-slash');
-        }
+        if (btn) btn.innerText = 'Ẩn';
     } else {
         input.type = 'password';
-        if (icon) {
-            icon.classList.remove('ph-eye-slash');
-            icon.classList.add('ph-eye');
-        }
+        if (btn) btn.innerText = 'Xem';
     }
 };
 

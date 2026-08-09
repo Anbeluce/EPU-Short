@@ -4,14 +4,11 @@
 <div class="error-page container">
     <div class="glass-card text-center" style="max-width: 500px; width: 100%;">
         <div class="icon-large">
-            {% if '404' in error_title %}<i class="ph ph-magnifying-glass" style="font-size: 3rem;"></i>
-            {% elif 'hạn' in error_title|lower %}<i class="ph ph-alarm" style="font-size: 3rem;"></i>
-            {% else %}<i class="ph ph-warning-circle" style="font-size: 3rem;"></i>{% endif %}
         </div>
         <h1 class="gradient-text mb-2">{{ error_title }}</h1>
         <p class="text-secondary mb-4">{{ error_message }}</p>
         
-        <a href="/" class="btn"><i class="ph ph-house"></i> Về trang chủ</a>
+        <a href="/" class="btn">Về trang chủ</a>
     </div>
 </div>
 {% endblock %}

@@ -22,21 +22,21 @@
         
         <div class="input-row">
             <div class="input-group">
-                <label for="link-expire"><i class="ph ph-clock"></i> Hết hạn sau (tuỳ chọn)</label>
+                <label for="link-expire">Hết hạn sau (tuỳ chọn)</label>
                 <input type="text" name="expires_at" id="link-expire" class="flatpickr-input" placeholder="Chọn ngày giờ hết hạn">
             </div>
         </div>
         
-        <button type="submit" class="btn" id="shorten-btn"><i class="ph ph-magic-wand"></i> Rút gọn ngay</button>
+        <button type="submit" class="btn" id="shorten-btn">Rút gọn ngay</button>
     </form>
 </div>
 
 <!-- Result Card -->
 <div id="result-card" class="result-card glass-card" style="display:none; margin-top: 2rem;">
-    <h3 class="gradient-text"><i class="ph ph-sparkle"></i> Tạo thành công!</h3>
+    <h3 class="gradient-text">Tạo thành công!</h3>
     <div class="result-url">
         <input type="text" id="result-url-input" readonly>
-        <button class="btn" onclick="copyToClipboard('result-url-input')"><i class="ph ph-copy"></i> Copy</button>
+        <button class="btn" onclick="copyToClipboard('result-url-input')">Copy</button>
     </div>
     <div class="result-badges">
     </div>

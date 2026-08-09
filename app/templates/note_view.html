@@ -6,7 +6,7 @@
     <div class="glass-card ql-snow">
         <div class="meta-bar">
             <span>Tạo lúc: {{ note.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
-            <span><i class="ph ph-eye"></i> Lượt xem: {{ note.view_count }}</span>
+            <span>Lượt xem: {{ note.view_count }}</span>
         </div>
         
         {% if note.title %}
@@ -18,8 +18,8 @@
         <div class="note-content ql-editor">{{ note.content | safe }}</div>
 
         <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-            <button class="btn" onclick="copyNoteContent()"><i class="ph ph-copy"></i> Copy Nội dung</button>
-            <a href="/" class="btn btn-secondary"><i class="ph ph-house"></i> Về trang chủ</a>
+            <button class="btn" onclick="copyNoteContent()">Copy Nội dung</button>
+            <a href="/" class="btn btn-secondary">Về trang chủ</a>
         </div>
     </div>
 </div>

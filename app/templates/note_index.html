@@ -12,7 +12,7 @@
             <input type="text" name="custom_code" placeholder="Mô tả ngắn (alias)..." pattern="^[a-zA-Z0-9_-]+$" class="note-top-input">
             
             <div class="dropdown-container">
-                <button type="button" class="btn-secondary btn-icon" onclick="toggleDropdown('expiry-dropdown')"><i class="ph ph-clock"></i> Thời hạn</button>
+                <button type="button" class="btn-secondary btn-icon" onclick="toggleDropdown('expiry-dropdown')">Thời hạn</button>
                 <div id="expiry-dropdown" class="dropdown-menu">
                     <label>Hết hạn lúc</label>
                     <input type="text" name="expires_at" id="front-note-expire" class="flatpickr-input" placeholder="Tuỳ chọn" style="margin-top: 0.5rem; width: 100%;">
@@ -20,12 +20,12 @@
             </div>
             
             <div class="dropdown-container">
-                <button type="button" class="btn-secondary btn-icon" onclick="toggleDropdown('password-dropdown')"><i class="ph ph-lock-key"></i> Tạo khoá</button>
+                <button type="button" class="btn-secondary btn-icon" onclick="toggleDropdown('password-dropdown')">Tạo khoá</button>
                 <div id="password-dropdown" class="dropdown-menu">
                     <label>Mật khẩu bảo vệ</label>
                     <div class="password-wrapper" style="margin-top: 0.5rem;">
                         <input type="password" name="password" id="note-password" placeholder="Nhập mật khẩu">
-                        <button type="button" class="toggle-password" onclick="togglePassword('note-password')"><i class="ph ph-eye"></i></button>
+                        <button type="button" class="toggle-password" onclick="togglePassword('note-password')">Xem</button>
                     </div>
                 </div>
             </div>
@@ -44,10 +44,10 @@
 
 <!-- Result Card -->
 <div id="result-card" class="result-card glass-card" style="display:none; margin-top: 2rem;">
-    <h3 class="gradient-text"><i class="ph ph-sparkle"></i> Tạo thành công!</h3>
+    <h3 class="gradient-text">Tạo thành công!</h3>
     <div class="result-url">
         <input type="text" id="result-url-input" readonly>
-        <button class="btn" onclick="copyToClipboard('result-url-input')"><i class="ph ph-copy"></i> Copy</button>
+        <button class="btn" onclick="copyToClipboard('result-url-input')">Copy</button>
     </div>
     <div class="result-badges">
     </div>
