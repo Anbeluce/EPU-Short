@@ -1,11 +1,21 @@
 from typing import Optional
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 class ShortenRequest(BaseModel):
     url: str
     custom_code: Optional[str] = None
     expires_at: Optional[datetime] = None
+
+    @field_validator('expires_at', mode='before')
+    @classmethod
+    def parse_expires_at(cls, v):
+        if isinstance(v, str) and v:
+            try:
+                return datetime.strptime(v, "%Y-%m-%d %H:%M")
+            except ValueError:
+                pass
+        return v
 
 class ShortenResponse(BaseModel):
     short_code: str
@@ -21,6 +31,16 @@ class NoteCreateRequest(BaseModel):
     custom_code: Optional[str] = None
     password: Optional[str] = None
     expires_at: Optional[datetime] = None
+
+    @field_validator('expires_at', mode='before')
+    @classmethod
+    def parse_expires_at(cls, v):
+        if isinstance(v, str) and v:
+            try:
+                return datetime.strptime(v, "%Y-%m-%d %H:%M")
+            except ValueError:
+                pass
+        return v
 
 class NoteCreateResponse(BaseModel):
     short_code: str
