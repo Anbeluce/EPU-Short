@@ -12,6 +12,8 @@ def utcnow():
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
 def create_short_link(session: Session, url: str, custom_code: Optional[str] = None, password: Optional[str] = None, expires_in_hours: Optional[int] = None, is_admin: bool = False) -> Link:
+    if not url.startswith(('http://', 'https://', 'ftp://')):
+        url = 'https://' + url
     if not validators.url(url):
         raise ValueError("Invalid URL")
         
