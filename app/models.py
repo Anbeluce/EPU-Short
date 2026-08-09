@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from sqlmodel import SQLModel, Field
 
 def utcnow():
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+    return datetime.now()
 
 class Link(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)

@@ -9,7 +9,7 @@ from app.models import Link, Note
 from app.utils import generate_short_code, hash_password, validate_custom_code
 
 def utcnow():
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+    return datetime.now()
 
 def create_short_link(session: Session, url: str, custom_code: Optional[str] = None, password: Optional[str] = None, expires_in_hours: Optional[int] = None, is_admin: bool = False) -> Link:
     if not url.startswith(('http://', 'https://', 'ftp://')):
