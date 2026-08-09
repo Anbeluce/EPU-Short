@@ -22,14 +22,7 @@
         
         <div class="input-row">
             <div class="input-group">
-                <label>Mật khẩu <span class="optional">(tùy chọn)</span></label>
-                <div class="password-wrapper shorten-password">
-                    <input type="password" name="password" id="shorten-password" placeholder="Đặt mật khẩu bảo vệ">
-                    <button type="button" class="toggle-password" onclick="togglePassword('shorten-password')"><i class="ph ph-eye"></i></button>
-                </div>
-            </div>
-            <div class="input-group">
-                <label>Hết hạn <span class="optional">(tùy chọn)</span></label>
+                <label for="link-expire"><i class="ph ph-clock"></i> Hết hạn sau (tuỳ chọn)</label>
                 <select name="expires_in_hours">
                     <option value="">Không hết hạn</option>
                     <option value="1">1 giờ</option>

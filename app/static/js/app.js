@@ -25,7 +25,6 @@ window.openLinkModal = function(btnOrId = null, url = '', code = '') {
     
     document.getElementById('link_url').value = url;
     document.getElementById('link_code').value = code;
-    document.getElementById('link_pass').value = '';
     document.getElementById('link_expire').value = '';
     
     if (id) {

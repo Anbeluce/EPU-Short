@@ -11,7 +11,7 @@ from app.utils import generate_short_code, hash_password, validate_custom_code
 def utcnow():
     return datetime.now()
 
-def create_short_link(session: Session, url: str, custom_code: Optional[str] = None, password: Optional[str] = None, expires_in_hours: Optional[int] = None, is_admin: bool = False) -> Link:
+def create_short_link(session: Session, url: str, custom_code: Optional[str] = None, expires_in_hours: Optional[int] = None, is_admin: bool = False) -> Link:
     if not url.startswith(('http://', 'https://', 'ftp://')):
         url = 'https://' + url
     if not validators.url(url):
@@ -39,7 +39,6 @@ def create_short_link(session: Session, url: str, custom_code: Optional[str] = N
     link = Link(
         short_code=code,
         original_url=url,
-        password_hash=hash_password(password) if password else None,
         expires_at=expires_at
     )
     session.add(link)
@@ -122,7 +121,7 @@ def increment_note_views(session: Session, note: Note):
 def get_all_links(session: Session) -> List[Link]:
     return session.exec(select(Link).order_by(Link.created_at.desc())).all()
 
-def edit_link(session: Session, link_id: int, original_url: str, short_code: str, password: Optional[str] = None, expires_in_hours: Optional[int] = None) -> Link:
+def edit_link(session: Session, link_id: int, original_url: str, short_code: str, expires_in_hours: Optional[int] = None) -> Link:
     link = session.get(Link, link_id)
     if not link:
         raise ValueError("Link not found")
@@ -140,9 +139,6 @@ def edit_link(session: Session, link_id: int, original_url: str, short_code: str
 
     link.original_url = original_url
     
-    if password:
-        link.password_hash = hash_password(password)
-        
     if expires_in_hours is not None:
         if expires_in_hours == 0:
             link.expires_at = None

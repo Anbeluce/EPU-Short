@@ -14,14 +14,13 @@ def api_shorten(req: ShortenRequest, session: Session = Depends(get_session)):
             session=session,
             url=req.url,
             custom_code=req.custom_code,
-            password=req.password,
             expires_in_hours=req.expires_in_hours
         )
         return ShortenResponse(
             short_code=link.short_code,
             short_url=f"{settings.BASE_URL}/{link.short_code}",
             original_url=link.original_url,
-            has_password=bool(link.password_hash),
+            has_password=False,
             expires_at=link.expires_at,
             created_at=link.created_at
         )

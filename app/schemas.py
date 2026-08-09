@@ -5,7 +5,6 @@ from pydantic import BaseModel
 class ShortenRequest(BaseModel):
     url: str
     custom_code: Optional[str] = None
-    password: Optional[str] = None
     expires_in_hours: Optional[int] = None
 
 class ShortenResponse(BaseModel):

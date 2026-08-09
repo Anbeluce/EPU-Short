@@ -97,11 +97,11 @@ def admin_delete(request: Request, item_type: str, item_id: int, session: Sessio
     return RedirectResponse(url="/memaybeo/dashboard", status_code=303)
 
 @router.post("/create/link")
-def admin_create_link(request: Request, url: str = Form(...), custom_code: str = Form(None), password: str = Form(None), expires_in_hours: int = Form(None), session: Session = Depends(get_session)):
+def admin_create_link(request: Request, url: str = Form(...), custom_code: str = Form(None), expires_in_hours: int = Form(None), session: Session = Depends(get_session)):
     user = require_admin(request)
     if not user: return RedirectResponse(url="/memaybeo", status_code=303)
     try:
-        create_short_link(session, url, custom_code, password, expires_in_hours, is_admin=True)
+        create_short_link(session, url=url, custom_code=custom_code, expires_in_hours=expires_in_hours, is_admin=True)
     except Exception as e:
         print(f"Error creating link: {e}")
     return RedirectResponse(url="/memaybeo/dashboard", status_code=303)
@@ -117,11 +117,11 @@ def admin_create_note(request: Request, content: str = Form(...), title: str = F
     return RedirectResponse(url="/memaybeo/dashboard", status_code=303)
 
 @router.post("/edit/link/{item_id}")
-def admin_edit_link(request: Request, item_id: int, original_url: str = Form(...), custom_code: str = Form(...), password: str = Form(None), expires_in_hours: int = Form(None), session: Session = Depends(get_session)):
+def admin_edit_link(request: Request, item_id: int, url: str = Form(...), custom_code: str = Form(...), expires_in_hours: int = Form(None), session: Session = Depends(get_session)):
     user = require_admin(request)
     if not user: return RedirectResponse(url="/memaybeo", status_code=303)
     try:
-        edit_link(session, item_id, original_url, custom_code, password, expires_in_hours)
+        edit_link(session, link_id=item_id, original_url=url, short_code=custom_code, expires_in_hours=expires_in_hours)
     except Exception as e:
         print(f"Error editing link: {e}")
     return RedirectResponse(url="/memaybeo/dashboard", status_code=303)

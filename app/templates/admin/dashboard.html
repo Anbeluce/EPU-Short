@@ -56,7 +56,6 @@
                             <th>Code</th>
                             <th>URL gốc</th>
                             <th>Clicks</th>
-                            <th>Password</th>
                             <th>Trạng thái</th>
                             <th>Ngày tạo</th>
                             <th>Hết hạn</th>
@@ -71,7 +70,6 @@
                                 {{ link.original_url[:50] }}{% if link.original_url|length > 50 %}...{% endif %}
                             </td>
                             <td>{{ link.click_count }}</td>
-                            <td>{% if link.password_hash %}<i class="ph ph-lock-key"></i>{% else %}—{% endif %}</td>
                             <td>
                                 {% if not link.is_active %}
                                     <span class="badge badge-red">Inactive</span>
@@ -171,10 +169,6 @@
             <div class="input-group">
                 <label>Mã tùy chỉnh (tuỳ chọn)</label>
                 <input type="text" name="custom_code" id="link_code">
-            </div>
-            <div class="input-group">
-                <label>Mật khẩu (tuỳ chọn)</label>
-                <input type="password" name="password" id="link_pass" placeholder="Bỏ trống nếu không đổi">
             </div>
             <div class="input-group">
                 <label>Hết hạn sau (tuỳ chọn)</label>
