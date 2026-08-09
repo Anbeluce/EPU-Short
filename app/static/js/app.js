@@ -1,5 +1,6 @@
 let quill; // Global quill instance
 let adminQuill; // Admin quill instance
+let fpLinkExpire, fpNoteExpire, fpShortenExpire;
 
 window.switchTab = function(tabName) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -12,12 +13,13 @@ window.switchTab = function(tabName) {
     if (content) content.classList.add('active');
 };
 
-window.openLinkModal = function(btnOrId = null, url = '', code = '') {
+window.openLinkModal = function(btnOrId = null, url = '', code = '', expires = '') {
     let id = btnOrId;
     if (typeof btnOrId === 'object' && btnOrId !== null) {
         id = btnOrId.dataset.id;
         url = btnOrId.dataset.url;
         code = btnOrId.dataset.code;
+        expires = btnOrId.dataset.expires || '';
     }
     const modal = document.getElementById('linkModal');
     const form = document.getElementById('linkForm');
@@ -25,7 +27,10 @@ window.openLinkModal = function(btnOrId = null, url = '', code = '') {
     
     document.getElementById('link_url').value = url;
     document.getElementById('link_code').value = code;
-    document.getElementById('link_expire').value = '';
+    if (fpLinkExpire) {
+        if (expires) fpLinkExpire.setDate(expires);
+        else fpLinkExpire.clear();
+    }
     
     if (id) {
         title.innerText = 'Sửa Link';
@@ -38,12 +43,13 @@ window.openLinkModal = function(btnOrId = null, url = '', code = '') {
     modal.style.display = 'block';
 };
 
-window.openNoteModal = function(btnOrId = null, titleStr = '', code = '') {
+window.openNoteModal = function(btnOrId = null, titleStr = '', code = '', expires = '') {
     let id = btnOrId;
     if (typeof btnOrId === 'object' && btnOrId !== null) {
         id = btnOrId.dataset.id;
         titleStr = btnOrId.dataset.title;
         code = btnOrId.dataset.code;
+        expires = btnOrId.dataset.expires || '';
     }
     const modal = document.getElementById('noteModal');
     const form = document.getElementById('noteForm');
@@ -52,7 +58,10 @@ window.openNoteModal = function(btnOrId = null, titleStr = '', code = '') {
     document.getElementById('note_title').value = titleStr;
     document.getElementById('note_code').value = code;
     document.getElementById('note_pass').value = '';
-    document.getElementById('note_expire').value = '';
+    if (fpNoteExpire) {
+        if (expires) fpNoteExpire.setDate(expires);
+        else fpNoteExpire.clear();
+    }
     
     if (adminQuill) {
         if (id) {
@@ -102,6 +111,25 @@ document.addEventListener('DOMContentLoaded', () => {
             await submitForm(noteForm, '/api/note', 'note-btn');
         });
     }
+
+    const fpConfig = {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+        minDate: "today",
+        time_24hr: true
+    };
+    
+    const shortenExpireEl = document.getElementById('link-expire');
+    if (shortenExpireEl) fpShortenExpire = flatpickr(shortenExpireEl, fpConfig);
+    
+    const adminLinkExpireEl = document.getElementById('link_expire');
+    if (adminLinkExpireEl) fpLinkExpire = flatpickr(adminLinkExpireEl, fpConfig);
+    
+    const adminNoteExpireEl = document.getElementById('note_expire');
+    if (adminNoteExpireEl) fpNoteExpire = flatpickr(adminNoteExpireEl, fpConfig);
+
+    const frontNoteExpireEl = document.getElementById('front-note-expire');
+    if (frontNoteExpireEl) flatpickr(frontNoteExpireEl, fpConfig);
 
     if (document.getElementById('editor')) {
         quill = new Quill('#editor', {
@@ -167,7 +195,7 @@ async function submitForm(form, endpoint, btnId) {
     // Clean up empty optional fields
     if (!data.custom_code) delete data.custom_code;
     if (!data.password) delete data.password;
-    if (!data.expires_in_hours) delete data.expires_in_hours;
+    if (!data.expires_at) delete data.expires_at;
     if (!data.title) delete data.title;
 
     // If this is the note form, get HTML from Quill

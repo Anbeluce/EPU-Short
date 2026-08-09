@@ -5,7 +5,7 @@ from pydantic import BaseModel
 class ShortenRequest(BaseModel):
     url: str
     custom_code: Optional[str] = None
-    expires_in_hours: Optional[int] = None
+    expires_at: Optional[datetime] = None
 
 class ShortenResponse(BaseModel):
     short_code: str
@@ -20,7 +20,7 @@ class NoteCreateRequest(BaseModel):
     content: str
     custom_code: Optional[str] = None
     password: Optional[str] = None
-    expires_in_hours: Optional[int] = None
+    expires_at: Optional[datetime] = None
 
 class NoteCreateResponse(BaseModel):
     short_code: str

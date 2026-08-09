@@ -14,14 +14,8 @@
             <div class="dropdown-container">
                 <button type="button" class="btn-secondary btn-icon" onclick="toggleDropdown('expiry-dropdown')"><i class="ph ph-clock"></i> Thời hạn</button>
                 <div id="expiry-dropdown" class="dropdown-menu">
-                    <label>Hết hạn sau</label>
-                    <select name="expires_in_hours" style="margin-top: 0.5rem;">
-                        <option value="">Không bao giờ</option>
-                        <option value="1">1 giờ</option>
-                        <option value="24">1 ngày</option>
-                        <option value="168">7 ngày</option>
-                        <option value="720">30 ngày</option>
-                    </select>
+                    <label>Hết hạn lúc</label>
+                    <input type="text" name="expires_at" id="front-note-expire" class="flatpickr-input" placeholder="Tuỳ chọn" style="margin-top: 0.5rem; width: 100%;">
                 </div>
             </div>
             

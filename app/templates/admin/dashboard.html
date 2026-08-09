@@ -82,7 +82,7 @@
                             <td>{{ link.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
                             <td>{% if link.expires_at %}{{ link.expires_at.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %}</td>
                             <td class="actions">
-                                <button type="button" class="btn-sm btn-secondary" data-id="{{ link.id }}" data-url="{{ link.original_url }}" data-code="{{ link.short_code }}" onclick="openLinkModal(this)">✏️ Sửa</button>
+                                <button type="button" class="btn-sm btn-secondary" data-id="{{ link.id }}" data-url="{{ link.original_url }}" data-code="{{ link.short_code }}" data-expires="{{ link.expires_at.strftime('%Y-%m-%d %H:%M') if link.expires_at else '' }}" onclick="openLinkModal(this)">✏️ Sửa</button>
                                 <form method="POST" action="/memaybeo/toggle/link/{{ link.id }}" style="display:inline">
                                     <button type="submit" class="btn-sm {% if link.is_active %}btn-warning{% else %}btn-success{% endif %}">
                                         {% if link.is_active %}Tắt{% else %}Bật{% endif %}
@@ -137,7 +137,7 @@
                             <td>{% if note.expires_at %}{{ note.expires_at.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %}</td>
                             <td class="actions">
                                 <textarea id="note-content-{{ note.id }}" style="display:none;">{{ note.content }}</textarea>
-                                <button type="button" class="btn-sm btn-secondary" data-id="{{ note.id }}" data-title="{{ note.title or '' }}" data-code="{{ note.short_code }}" onclick="openNoteModal(this)">✏️ Sửa</button>
+                                <button type="button" class="btn-sm btn-secondary" data-id="{{ note.id }}" data-title="{{ note.title or '' }}" data-code="{{ note.short_code }}" data-expires="{{ note.expires_at.strftime('%Y-%m-%d %H:%M') if note.expires_at else '' }}" onclick="openNoteModal(this)">✏️ Sửa</button>
                                 <form method="POST" action="/memaybeo/toggle/note/{{ note.id }}" style="display:inline">
                                     <button type="submit" class="btn-sm {% if note.is_active %}btn-warning{% else %}btn-success{% endif %}">
                                         {% if note.is_active %}Tắt{% else %}Bật{% endif %}
@@ -171,14 +171,8 @@
                 <input type="text" name="custom_code" id="link_code">
             </div>
             <div class="input-group">
-                <label>Hết hạn sau (tuỳ chọn)</label>
-                <select name="expires_in_hours" id="link_expire">
-                    <option value="">Không đổi (nếu sửa)</option>
-                    <option value="0">Không hết hạn</option>
-                    <option value="1">1 giờ</option>
-                    <option value="24">1 ngày</option>
-                    <option value="168">7 ngày</option>
-                </select>
+                <label>Hết hạn lúc (tuỳ chọn)</label>
+                <input type="text" name="expires_at" id="link_expire" class="flatpickr-input" placeholder="Để trống nếu không hết hạn">
             </div>
             <button type="submit" class="btn w-100">Lưu</button>
         </form>
@@ -211,14 +205,8 @@
                     <input type="password" name="password" id="note_pass" placeholder="Bỏ trống nếu không đổi">
                 </div>
                 <div class="input-group">
-                    <label>Hết hạn sau</label>
-                    <select name="expires_in_hours" id="note_expire">
-                        <option value="">Không đổi (nếu sửa)</option>
-                        <option value="0">Không hết hạn</option>
-                        <option value="1">1 giờ</option>
-                        <option value="24">1 ngày</option>
-                        <option value="168">7 ngày</option>
-                    </select>
+                    <label>Hết hạn lúc (tuỳ chọn)</label>
+                    <input type="text" name="expires_at" id="note_expire" class="flatpickr-input" placeholder="Để trống nếu không hết hạn">
                 </div>
             </div>
             <button type="submit" class="btn w-100" onclick="document.getElementById('note_content_hidden').value = adminQuill.root.innerHTML">Lưu</button>

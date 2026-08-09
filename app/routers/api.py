@@ -14,7 +14,7 @@ def api_shorten(req: ShortenRequest, session: Session = Depends(get_session)):
             session=session,
             url=req.url,
             custom_code=req.custom_code,
-            expires_in_hours=req.expires_in_hours
+            expires_at=req.expires_at
         )
         return ShortenResponse(
             short_code=link.short_code,
@@ -36,7 +36,7 @@ def api_create_note(req: NoteCreateRequest, session: Session = Depends(get_sessi
             title=req.title,
             custom_code=req.custom_code,
             password=req.password,
-            expires_in_hours=req.expires_in_hours
+            expires_at=req.expires_at
         )
         return NoteCreateResponse(
             short_code=note.short_code,

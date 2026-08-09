@@ -5,6 +5,7 @@ from sqlmodel import Session
 from pathlib import Path
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from datetime import datetime, timezone
+from typing import Optional
 
 from app.database import get_session
 from app.services import (
@@ -13,6 +14,17 @@ from app.services import (
     create_short_link, create_note, edit_link, edit_note
 )
 from app.config import settings
+
+def parse_expires_at(date_str: str) -> Optional[datetime]:
+    if not date_str:
+        return None
+    try:
+        return datetime.strptime(date_str, "%Y-%m-%d %H:%M")
+    except ValueError:
+        try:
+            return datetime.strptime(date_str, "%Y-%m-%dT%H:%M")
+        except ValueError:
+            return None
 
 router = APIRouter(prefix="/memaybeo", tags=["Admin"])
 templates = Jinja2Templates(directory=str(Path(__file__).resolve().parent.parent / "templates"))
@@ -97,41 +109,45 @@ def admin_delete(request: Request, item_type: str, item_id: int, session: Sessio
     return RedirectResponse(url="/memaybeo/dashboard", status_code=303)
 
 @router.post("/create/link")
-def admin_create_link(request: Request, url: str = Form(...), custom_code: str = Form(None), expires_in_hours: int = Form(None), session: Session = Depends(get_session)):
+def admin_create_link(request: Request, url: str = Form(...), custom_code: str = Form(None), expires_at: str = Form(None), session: Session = Depends(get_session)):
     user = require_admin(request)
     if not user: return RedirectResponse(url="/memaybeo", status_code=303)
     try:
-        create_short_link(session, url=url, custom_code=custom_code, expires_in_hours=expires_in_hours, is_admin=True)
+        parsed_expires = parse_expires_at(expires_at)
+        create_short_link(session, url=url, custom_code=custom_code, expires_at=parsed_expires, is_admin=True)
     except Exception as e:
         print(f"Error creating link: {e}")
     return RedirectResponse(url="/memaybeo/dashboard", status_code=303)
 
 @router.post("/create/note")
-def admin_create_note(request: Request, content: str = Form(...), title: str = Form(None), custom_code: str = Form(None), password: str = Form(None), expires_in_hours: int = Form(None), session: Session = Depends(get_session)):
+def admin_create_note(request: Request, content: str = Form(...), title: str = Form(None), custom_code: str = Form(None), password: str = Form(None), expires_at: str = Form(None), session: Session = Depends(get_session)):
     user = require_admin(request)
     if not user: return RedirectResponse(url="/memaybeo", status_code=303)
     try:
-        create_note(session, content, title, custom_code, password, expires_in_hours, is_admin=True)
+        parsed_expires = parse_expires_at(expires_at)
+        create_note(session, content, title, custom_code, password, expires_at=parsed_expires, is_admin=True)
     except Exception as e:
         print(f"Error creating note: {e}")
     return RedirectResponse(url="/memaybeo/dashboard", status_code=303)
 
 @router.post("/edit/link/{item_id}")
-def admin_edit_link(request: Request, item_id: int, url: str = Form(...), custom_code: str = Form(...), expires_in_hours: int = Form(None), session: Session = Depends(get_session)):
+def admin_edit_link(request: Request, item_id: int, url: str = Form(...), custom_code: str = Form(...), expires_at: str = Form(None), session: Session = Depends(get_session)):
     user = require_admin(request)
     if not user: return RedirectResponse(url="/memaybeo", status_code=303)
     try:
-        edit_link(session, link_id=item_id, original_url=url, short_code=custom_code, expires_in_hours=expires_in_hours)
+        parsed_expires = parse_expires_at(expires_at)
+        edit_link(session, link_id=item_id, original_url=url, short_code=custom_code, expires_at=parsed_expires)
     except Exception as e:
         print(f"Error editing link: {e}")
     return RedirectResponse(url="/memaybeo/dashboard", status_code=303)
 
 @router.post("/edit/note/{item_id}")
-def admin_edit_note(request: Request, item_id: int, content: str = Form(...), title: str = Form(None), custom_code: str = Form(...), password: str = Form(None), expires_in_hours: int = Form(None), session: Session = Depends(get_session)):
+def admin_edit_note(request: Request, item_id: int, content: str = Form(...), title: str = Form(None), custom_code: str = Form(...), password: str = Form(None), expires_at: str = Form(None), session: Session = Depends(get_session)):
     user = require_admin(request)
     if not user: return RedirectResponse(url="/memaybeo", status_code=303)
     try:
-        edit_note(session, item_id, content, title, custom_code, password, expires_in_hours)
+        parsed_expires = parse_expires_at(expires_at)
+        edit_note(session, note_id=item_id, content=content, title=title, short_code=custom_code, password=password, expires_at=parsed_expires)
     except Exception as e:
         print(f"Error editing note: {e}")
     return RedirectResponse(url="/memaybeo/dashboard", status_code=303)

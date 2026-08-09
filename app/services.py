@@ -11,7 +11,7 @@ from app.utils import generate_short_code, hash_password, validate_custom_code
 def utcnow():
     return datetime.now()
 
-def create_short_link(session: Session, url: str, custom_code: Optional[str] = None, expires_in_hours: Optional[int] = None, is_admin: bool = False) -> Link:
+def create_short_link(session: Session, url: str, custom_code: Optional[str] = None, expires_at: Optional[datetime] = None, is_admin: bool = False) -> Link:
     if not url.startswith(('http://', 'https://', 'ftp://')):
         url = 'https://' + url
     if not validators.url(url):
@@ -31,11 +31,6 @@ def create_short_link(session: Session, url: str, custom_code: Optional[str] = N
                 break
         else:
             raise ValueError("Failed to generate a unique short code")
-            
-    expires_at = None
-    if expires_in_hours:
-        expires_at = utcnow() + timedelta(hours=expires_in_hours)
-        
     link = Link(
         short_code=code,
         original_url=url,
@@ -59,7 +54,7 @@ def increment_link_clicks(session: Session, link: Link):
     session.add(link)
     session.commit()
 
-def create_note(session: Session, content: str, title: Optional[str] = None, custom_code: Optional[str] = None, password: Optional[str] = None, expires_in_hours: Optional[int] = None, is_admin: bool = False) -> Note:
+def create_note(session: Session, content: str, title: Optional[str] = None, custom_code: Optional[str] = None, password: Optional[str] = None, expires_at: Optional[datetime] = None, is_admin: bool = False) -> Note:
     # Sanitize HTML content
     allowed_tags = bleach.sanitizer.ALLOWED_TAGS.union({'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'br', 'strong', 'em', 'u', 's', 'ol', 'ul', 'li', 'a', 'img', 'blockquote', 'pre'})
     allowed_attributes = {
@@ -88,11 +83,6 @@ def create_note(session: Session, content: str, title: Optional[str] = None, cus
                 break
         else:
             raise ValueError("Failed to generate a unique short code")
-            
-    expires_at = None
-    if expires_in_hours:
-        expires_at = utcnow() + timedelta(hours=expires_in_hours)
-        
     note = Note(
         short_code=code,
         title=title,
@@ -121,7 +111,7 @@ def increment_note_views(session: Session, note: Note):
 def get_all_links(session: Session) -> List[Link]:
     return session.exec(select(Link).order_by(Link.created_at.desc())).all()
 
-def edit_link(session: Session, link_id: int, original_url: str, short_code: str, expires_in_hours: Optional[int] = None) -> Link:
+def edit_link(session: Session, link_id: int, original_url: str, short_code: str, expires_at: Optional[datetime] = None) -> Link:
     link = session.get(Link, link_id)
     if not link:
         raise ValueError("Link not found")
@@ -139,18 +129,14 @@ def edit_link(session: Session, link_id: int, original_url: str, short_code: str
 
     link.original_url = original_url
     
-    if expires_in_hours is not None:
-        if expires_in_hours == 0:
-            link.expires_at = None
-        else:
-            link.expires_at = utcnow() + timedelta(hours=expires_in_hours)
-            
+    link.expires_at = expires_at
+    
     session.add(link)
     session.commit()
     session.refresh(link)
     return link
 
-def edit_note(session: Session, note_id: int, content: str, title: Optional[str] = None, short_code: Optional[str] = None, password: Optional[str] = None, expires_in_hours: Optional[int] = None) -> Note:
+def edit_note(session: Session, note_id: int, content: str, title: Optional[str] = None, short_code: Optional[str] = None, password: Optional[str] = None, expires_at: Optional[datetime] = None) -> Note:
     note = session.get(Note, note_id)
     if not note:
         raise ValueError("Note not found")
@@ -183,12 +169,9 @@ def edit_note(session: Session, note_id: int, content: str, title: Optional[str]
     if password:
         note.password_hash = hash_password(password)
         
-    if expires_in_hours is not None:
-        if expires_in_hours == 0:
-            note.expires_at = None
-        else:
-            note.expires_at = utcnow() + timedelta(hours=expires_in_hours)
-            
+    if expires_at is not None:
+        note.expires_at = expires_at
+        
     session.add(note)
     session.commit()
     session.refresh(note)
