@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block body %}
+<div class="admin-layout container mt-4">
+    <div class="admin-header">
+        <h2 class="gradient-text" style="margin:0;"><i class="ph ph-lightning"></i>Admin</h2>
+        <a href="/memaybeo/logout" class="btn btn-secondary">Đăng xuất</a>
+    </div>
+
+    <div class="admin-overview">
+        <div class="glass-card stat-card">
+            <div class="stat-value">{{ stats.total_links }}</div>
+            <div class="stat-label">Tổng Links</div>
+        </div>
+        <div class="glass-card stat-card">
+            <div class="stat-value">{{ stats.total_notes }}</div>
+            <div class="stat-label">Tổng Notes</div>
+        </div>
+        <div class="glass-card stat-card">
+            <div class="stat-value">{{ stats.total_clicks }}</div>
+            <div class="stat-label">Tổng Clicks</div>
+        </div>
+        <div class="glass-card stat-card">
+            <div class="stat-value">{{ stats.total_views }}</div>
+            <div class="stat-label">Tổng Views</div>
+        </div>
+        <div class="glass-card stat-card">
+            <div class="stat-value">{{ stats.total_protected }}</div>
+            <div class="stat-label">Protected</div>
+        </div>
+    </div>
+
+    <div class="glass-card">
+        <div class="tabs" style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; gap: 1rem;">
+                <button class="tab-btn active" data-target="tab-links" onclick="switchTab('links')"><i class="ph ph-link"></i> Links ({{ links|length }})</button>
+                <button class="tab-btn" data-target="tab-notes" onclick="switchTab('notes')"><i class="ph ph-note-pencil"></i> Notes ({{ notes|length }})</button>
+            </div>
+            <div class="search-box">
+                <input type="text" id="table-search" placeholder="Tìm kiếm...">
+            </div>
+        </div>
+
+        <!-- Links Table -->
+        <div id="tab-links" class="tab-content active">
+            <div class="table-responsive">
+                <table class="admin-table" id="links-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>URL gốc</th>
+                            <th>Clicks</th>
+                            <th>Password</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày tạo</th>
+                            <th>Hết hạn</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for link in links %}
+                        <tr>
+                            <td><a href="/s/{{ link.short_code }}" target="_blank">{{ link.short_code }}</a></td>
+                            <td class="url-cell" title="{{ link.original_url }}">
+                                {{ link.original_url[:50] }}{% if link.original_url|length > 50 %}...{% endif %}
+                            </td>
+                            <td>{{ link.click_count }}</td>
+                            <td>{% if link.password_hash %}<i class="ph ph-lock-key"></i>{% else %}—{% endif %}</td>
+                            <td>
+                                {% if not link.is_active %}
+                                    <span class="badge badge-red">Inactive</span>
+                                {% elif link.expires_at and link.expires_at < now %}
+                                    <span class="badge badge-yellow">Expired</span>
+                                {% else %}
+                                    <span class="badge badge-green">Active</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ link.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>{% if link.expires_at %}{{ link.expires_at.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %}</td>
+                            <td class="actions">
+                                <form method="POST" action="/memaybeo/toggle/link/{{ link.id }}" style="display:inline">
+                                    <button type="submit" class="btn-sm {% if link.is_active %}btn-warning{% else %}btn-success{% endif %}">
+                                        {% if link.is_active %}Tắt{% else %}Bật{% endif %}
+                                    </button>
+                                </form>
+                                <form method="POST" action="/memaybeo/delete/link/{{ link.id }}" style="display:inline" onsubmit="return confirmDelete()">
+                                    <button type="submit" class="btn-sm btn-danger">Xóa</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Notes Table -->
+        <div id="tab-notes" class="tab-content">
+            <div class="table-responsive">
+                <table class="admin-table" id="notes-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Tiêu đề</th>
+                            <th>Views</th>
+                            <th>Password</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày tạo</th>
+                            <th>Hết hạn</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for note in notes %}
+                        <tr>
+                            <td><a href="/n/{{ note.short_code }}" target="_blank">{{ note.short_code }}</a></td>
+                            <td class="url-cell" title="{{ note.title }}">
+                                {% if note.title %}{{ note.title[:30] }}{% if note.title|length > 30 %}...{% endif %}{% else %}—{% endif %}
+                            </td>
+                            <td>{{ note.view_count }}</td>
+                            <td>{% if note.password_hash %}<i class="ph ph-lock-key"></i>{% else %}—{% endif %}</td>
+                            <td>
+                                {% if not note.is_active %}
+                                    <span class="badge badge-red">Inactive</span>
+                                {% elif note.expires_at and note.expires_at < now %}
+                                    <span class="badge badge-yellow">Expired</span>
+                                {% else %}
+                                    <span class="badge badge-green">Active</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ note.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>{% if note.expires_at %}{{ note.expires_at.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %}</td>
+                            <td class="actions">
+                                <form method="POST" action="/memaybeo/toggle/note/{{ note.id }}" style="display:inline">
+                                    <button type="submit" class="btn-sm {% if note.is_active %}btn-warning{% else %}btn-success{% endif %}">
+                                        {% if note.is_active %}Tắt{% else %}Bật{% endif %}
+                                    </button>
+                                </form>
+                                <form method="POST" action="/memaybeo/delete/note/{{ note.id }}" style="display:inline" onsubmit="return confirmDelete()">
+                                    <button type="submit" class="btn-sm btn-danger">Xóa</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

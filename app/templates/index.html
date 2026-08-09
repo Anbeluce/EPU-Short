@@ -1,0 +1,59 @@
+{% extends "app_layout.html" %}
+{% set active_menu = 'link' %}
+
+{% block title %}Rút gọn Link — {{ APP_NAME }}{% endblock %}
+
+{% block main_content %}
+<div class="glass-card">
+    <h2 class="gradient-text mb-4">Rút gọn Link</h2>
+    <form id="shorten-form">
+        <div class="input-group">
+            <label>URL cần rút gọn</label>
+            <input type="url" name="url" placeholder="https://example.com/very-long-url..." required>
+        </div>
+        
+        <div class="input-group">
+            <label>Custom alias <span class="optional">(tùy chọn)</span></label>
+            <div class="input-prefix-group">
+                <span class="prefix">/s/</span>
+                <input type="text" name="custom_code" placeholder="my-custom-link" pattern="^[a-zA-Z0-9_-]+$">
+            </div>
+        </div>
+        
+        <div class="input-row">
+            <div class="input-group">
+                <label>Mật khẩu <span class="optional">(tùy chọn)</span></label>
+                <div class="password-wrapper shorten-password">
+                    <input type="password" name="password" id="shorten-password" placeholder="Đặt mật khẩu bảo vệ">
+                    <button type="button" class="toggle-password" onclick="togglePassword('shorten-password')"><i class="ph ph-eye"></i></button>
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Hết hạn <span class="optional">(tùy chọn)</span></label>
+                <select name="expires_in_hours">
+                    <option value="">Không hết hạn</option>
+                    <option value="1">1 giờ</option>
+                    <option value="6">6 giờ</option>
+                    <option value="24">1 ngày</option>
+                    <option value="168">7 ngày</option>
+                    <option value="720">30 ngày</option>
+                </select>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn" id="shorten-btn"><i class="ph ph-magic-wand"></i> Rút gọn ngay</button>
+    </form>
+</div>
+
+<!-- Result Card -->
+<div id="result-card" class="result-card glass-card" style="display:none; margin-top: 2rem;">
+    <h3 class="gradient-text"><i class="ph ph-sparkle"></i> Tạo thành công!</h3>
+    <div class="result-url">
+        <input type="text" id="result-url-input" readonly>
+        <button class="btn" onclick="copyToClipboard('result-url-input')"><i class="ph ph-copy"></i> Copy</button>
+    </div>
+    <div class="result-badges">
+    </div>
+    <a id="result-stats-link" class="stats-link" href="#"><i class="ph ph-chart-bar"></i> Xem thống kê</a>
+</div>
+{% endblock %}

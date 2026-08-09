@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="app-container">
+    <div class="sidebar glass-card">
+        <div class="text-center mb-4" style="margin-top: 1rem;">
+            <h1 class="gradient-text" style="font-size: 2rem; margin-bottom: 0;">{{ APP_NAME }}</h1>
+        </div>
+        
+        <div class="sidebar-title">Menu Chính</div>
+        <a href="/" class="sidebar-link {% if active_menu == 'link' %}active{% endif %}">
+            <i class="ph ph-link"></i> Rút gọn Link
+        </a>
+        <a href="/note" class="sidebar-link {% if active_menu == 'note' %}active{% endif %}">
+            <i class="ph ph-note-pencil"></i> Tạo Note
+        </a>
+    </div>
+    
+    <div class="main-content">
+        {% block main_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}

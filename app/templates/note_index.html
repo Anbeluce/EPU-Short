@@ -1,0 +1,66 @@
+{% extends "app_layout.html" %}
+{% set active_menu = 'note' %}
+
+{% block title %}Tạo Note — {{ APP_NAME }}{% endblock %}
+
+{% block main_content %}
+<div class="glass-card">
+    <h2 class="gradient-text mb-4">Tạo Note Mới</h2>
+    <form id="note-form">
+        <div class="note-toolbar-top">
+            <input type="text" name="title" placeholder="Tên ghi chú..." class="note-top-input" required>
+            <input type="text" name="custom_code" placeholder="Mô tả ngắn (alias)..." pattern="^[a-zA-Z0-9_-]+$" class="note-top-input">
+            
+            <div class="dropdown-container">
+                <button type="button" class="btn-secondary btn-icon" onclick="toggleDropdown('expiry-dropdown')"><i class="ph ph-clock"></i> Thời hạn</button>
+                <div id="expiry-dropdown" class="dropdown-menu">
+                    <label>Hết hạn sau</label>
+                    <select name="expires_in_hours" style="margin-top: 0.5rem;">
+                        <option value="">Không bao giờ</option>
+                        <option value="1">1 giờ</option>
+                        <option value="24">1 ngày</option>
+                        <option value="168">7 ngày</option>
+                        <option value="720">30 ngày</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="dropdown-container">
+                <button type="button" class="btn-secondary btn-icon" onclick="toggleDropdown('password-dropdown')"><i class="ph ph-lock-key"></i> Tạo khoá</button>
+                <div id="password-dropdown" class="dropdown-menu">
+                    <label>Mật khẩu bảo vệ</label>
+                    <div class="password-wrapper" style="margin-top: 0.5rem;">
+                        <input type="password" name="password" id="note-password" placeholder="Nhập mật khẩu">
+                        <button type="button" class="toggle-password" onclick="togglePassword('note-password')"><i class="ph ph-eye"></i></button>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-save" id="note-btn">Lưu</button>
+        </div>
+        
+        <!-- Quill Editor -->
+        <div class="editor-container">
+            <div id="editor"></div>
+        </div>
+        <!-- Hidden input to store Quill HTML -->
+        <input type="hidden" name="content" id="note-content">
+    </form>
+</div>
+
+<!-- Result Card -->
+<div id="result-card" class="result-card glass-card" style="display:none; margin-top: 2rem;">
+    <h3 class="gradient-text"><i class="ph ph-sparkle"></i> Tạo thành công!</h3>
+    <div class="result-url">
+        <input type="text" id="result-url-input" readonly>
+        <button class="btn" onclick="copyToClipboard('result-url-input')"><i class="ph ph-copy"></i> Copy</button>
+    </div>
+    <div class="result-badges">
+    </div>
+    <a id="result-stats-link" class="stats-link" href="#"><i class="ph ph-chart-bar"></i> Xem thống kê</a>
+</div>
+
+<!-- Quill.js CDN -->
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+{% endblock %}

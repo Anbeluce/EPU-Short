@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login{% endblock %}
+
+{% block body %}
+<div class="login-page container">
+    <div class="glass-card text-center {% if error %}shake{% endif %}" style="max-width: 400px; width: 100%;">
+        <div class="icon-large"><i class="ph ph-lock-key" style="font-size: 3rem;"></i></div>
+        <h2 class="gradient-text">Admin Login</h2>
+        <p class="text-secondary mb-4">Khu vực quản trị hệ thống</p>
+
+        {% if error %}
+        <div class="badge badge-red mb-3" style="font-size: 0.9rem; display: block;">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" action="/memaybeo/login">
+            <div class="input-group text-left">
+                <input type="text" name="username" placeholder="Tên đăng nhập" required autofocus>
+            </div>
+            <div class="input-group text-left">
+                <div class="password-wrapper admin-pwd">
+                    <input type="password" name="password" id="admin-password" placeholder="Mật khẩu" required>
+                    <button type="button" class="toggle-password" onclick="togglePassword('admin-password')"><i class="ph ph-eye"></i></button>
+                </div>
+            </div>
+            <button type="submit" class="btn" style="width: 100%;">Đăng nhập</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

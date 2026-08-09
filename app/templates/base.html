@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ APP_NAME }}{% endblock %}</title>
+    <meta name="description" content="{% block description %}Rút gọn link và tạo note miễn phí{% endblock %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    {% block body %}{% endblock %}
+    
+    <footer>
+        <p>{{ APP_FOOTER }}</p>
+    </footer>
+    
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
