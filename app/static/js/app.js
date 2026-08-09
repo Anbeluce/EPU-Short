@@ -116,7 +116,8 @@ document.addEventListener('DOMContentLoaded', () => {
         enableTime: true,
         dateFormat: "Y-m-d H:i",
         minDate: "today",
-        time_24hr: true
+        time_24hr: true,
+        disableMobile: true
     };
     
     const shortenExpireEl = document.getElementById('link-expire');
